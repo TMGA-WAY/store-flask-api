@@ -1,10 +1,8 @@
-import uuid
-import traceback
-from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from db.db import stores
 from schemas import StoreSchema
+from models import StoreModel
+from db import db
 
 blp = Blueprint("stores", __name__, description="Operation on stores")
 
@@ -13,46 +11,39 @@ blp = Blueprint("stores", __name__, description="Operation on stores")
 class store(MethodView):
     @blp.response(status_code=200, schema=StoreSchema)
     def get(self, store_id):
-        try:
-            return stores[store_id]
-        except Exception as e:
-            print(traceback.print_exc())
-            abort(http_status_code=404, message="store not found.")
+        store_ = StoreModel.query.get_or_404(store_id)
+        return store_
 
+    @blp.response(status_code=200)
     def delete(self, store_id):
+        store_ = StoreModel.query.get_or_404(store_id)
         try:
-            stores.pop(store_id)
-            return {"message": "store deleted"}
+            db.session.delete(store_)
+            db.session.commit()
+            return {"message": f"Store with ID {store_id} got deleted"}
         except Exception as e:
-            abort(http_status_code=404, messsage="store not found")
-
-    @blp.response(status_code=200, schema=StoreSchema)
-    def put(selfself, store_id):
-        store_data = request.get_json()
-        if "price" not in store_data or "name" not in store_data:
-            abort(http_status_code=404, message="Bad request. Ensure 'price' and 'name' are included in JSON payload")
-        try:
-            store = stores[store_id]
-            store |= store_data
-            return store
-        except KeyError as e:
-            print(e)
-            abort(http_status_code=404, message="store not found")
+            db.session.rollback()
+            abort(http_status_code=400, message="Error while processing")
 
 
 @blp.route("/store")
 class StoreList(MethodView):
     @blp.response(status_code=200, schema=StoreSchema(many=True))
     def get(self):
-        return list(stores.values())
+        try:
+            stores = StoreModel.query.all()
+            return stores
+        except Exception as e:
+            abort(http_status_code=500, message="Error while processing")
 
     @blp.arguments(StoreSchema)
     @blp.response(status_code=201, schema=StoreSchema)
     def post(self, store_data):
-        for store in stores:
-            if store_data["name"] == store["name"]:
-                abort(http_status_code=404, message="store Already exists.")
-        store_id = uuid.uuid4().hex
-        store = {**store_id, "id": store_id}
-        stores[store_id] = store
-        return store, 201
+        try:
+            store_ = StoreModel(**store_data)
+            db.session.add(store_)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            abort(http_status_code=500, message="Store not Created")
+        return {"message": " Store Created succesfully"}
