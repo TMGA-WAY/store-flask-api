@@ -2,11 +2,9 @@ import os
 
 from flask import Flask, request
 from flask_smorest import Api
-from resources.item import blp as ItemBlueprint
-from resources.store import blp as StoreBlueprint
 
 from db.db import db
-import models
+from resources import StoreBlueprint, ItemBlueprint, TagBlueprint
 
 
 def create_app(db_url=None):
@@ -19,15 +17,14 @@ def create_app(db_url=None):
     app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
     app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
 
-
     app.config["SQLALCHEMY_DATABASE_URI"] = '{engine}://{user}:{password}@{host}:{port}/{database}'.format(
-                engine='postgresql+psycopg2',
-                user="postgres",
-                password="nopassword",
-                host="localhost",
-                port="5432",
-                database="internet"
-            )
+        engine='postgresql+psycopg2',
+        user="postgres",
+        password="nopassword",
+        host="localhost",
+        port="5432",
+        database="internet"
+    )
 
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.init_app(app)
@@ -37,4 +34,5 @@ def create_app(db_url=None):
 
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)
+    api.register_blueprint(TagBlueprint)
     return app
