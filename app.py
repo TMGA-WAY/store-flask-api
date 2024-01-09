@@ -1,7 +1,8 @@
 import os
 
-from flask import Flask, request
+from flask import Flask
 from flask_smorest import Api
+from flask_jwt_extended import JWTManager
 
 from db.db import db
 from resources import StoreBlueprint, ItemBlueprint, TagBlueprint
@@ -25,10 +26,14 @@ def create_app(db_url=None):
         port="5432",
         database="internet"
     )
-
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["JWT_SECRET_KEY"]="use_strong_secret_key"
+
+
     db.init_app(app)
     api = Api(app)
+
+    jwt = JWTManager(app)
     with app.app_context():
         db.create_all()
 

@@ -40,7 +40,7 @@ class TagsInStore(MethodView):
         return tag
 
 
-@blp.route("tag/<string:tag_id>")
+@blp.route("/tag/<string:tag_id>")
 class Tag(MethodView):
     @blp.response(status_code=200, schema=TagSchema)
     def get(self, tag_id):
