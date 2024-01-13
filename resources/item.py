@@ -1,14 +1,14 @@
-
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from schemas import ItemSchema, ItemUpdateSchema, PlainItemSchema
 from models import ItemModel
 from db import db
+from flask_jwt_extended import jwt_required
 
 blp = Blueprint("items", __name__, description="Operation on items")
 
 
-@blp.route("/item/<string:item_id>")
+@blp.route("/item/<int:item_id>")
 class Item(MethodView):
     @blp.response(status_code=200, schema=ItemSchema)
     def get(self, item_id):
@@ -49,7 +49,7 @@ class Item(MethodView):
 
 @blp.route("/item")
 class ItemList(MethodView):
-
+    @jwt_required()
     @blp.response(status_code=200, schema=PlainItemSchema(many=True))
     def get(self):
         try:
@@ -58,6 +58,7 @@ class ItemList(MethodView):
         except Exception as e:
             abort(http_status_code=500, message= "Error while processing")
 
+    @jwt_required()
     @blp.arguments(ItemSchema)
     @blp.response(status_code=201)
     def post(self, item_data):

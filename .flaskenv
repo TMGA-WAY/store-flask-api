@@ -1,7 +1,7 @@
 FLASK_APP = app
 FLASK_DEBUG=1
 ENGINE='postgresql+psycopg2'
-DATABASE = "internet"
+DATABASE = "stores"
 USER = "postgres"
 PASSWORD = "nopassword"
 HOST = "localhost"

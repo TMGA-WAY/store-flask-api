@@ -10,10 +10,10 @@ from schemas import TagSchema, TagAndItemSchema
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-blp = Blueprint("Tags", "tags", description="Operation on tags")
+blp = Blueprint("tags", __name__, description="Operation on tags")
 
 
-@blp.route("/store/<string:store_id>/tag")
+@blp.route("/store/<int:store_id>/tag")
 class TagsInStore(MethodView):
     @blp.response(status_code=200, schema=TagSchema(many=True))
     def get(self, store_id):
@@ -40,7 +40,7 @@ class TagsInStore(MethodView):
         return tag
 
 
-@blp.route("/tag/<string:tag_id>")
+@blp.route("/tag/<int:tag_id>")
 class Tag(MethodView):
     @blp.response(status_code=200, schema=TagSchema)
     def get(self, tag_id):
@@ -62,7 +62,7 @@ class Tag(MethodView):
         abort(400, "Could not delete tag. make sure tag is not associated with any Items, then try again")
 
 
-@blp.route("/item/<string:item_id>/tag/<string:tag_id>")
+@blp.route("/item/<int:item_id>/tag/<int:tag_id>")
 class LinkTagsToItem(MethodView):
     @blp.response(status_code=201, schema=TagSchema)
     def post(self, item_id, tag_id):

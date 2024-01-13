@@ -1,4 +1,7 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validates_schema, ValidationError
+import os
+from flask_smorest.fields import Upload
+
 
 
 ###############  Store Schema  ###################
@@ -61,3 +64,25 @@ class UserSchema(Schema):
     id = fields.Int(dump_only=True)
     username = fields.Str(required=True)
     password = fields.Str(required=True, load_only=True)
+
+
+class MultipartFileSchema(Schema):
+    file = Upload(required=True)
+    @validates_schema
+    def validate_file(self, data, **kwargs):
+        file = data["file"]
+
+        file.seek(0, os.SEEK_END)
+        file_size = file.tell()
+        if file_size > 5 * 1024 * 1024:
+            raise ValidationError("File size must be less than 5MB")
+
+        ## Reset file pointer
+        file.seek(0)
+
+        allowed_extension = ('csv', 'xlsx')
+        if not any(file.filename.endswith(ext) for ext in allowed_extension):
+            raise ValidationError("File must be CSV or Excel")
+        # except Exception as e:
+        #     raise ValueError("File not present")
+

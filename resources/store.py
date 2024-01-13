@@ -3,11 +3,12 @@ from flask_smorest import Blueprint, abort
 from schemas import StoreSchema
 from models import StoreModel
 from db import db
+from flask_jwt_extended import jwt_required
 
 blp = Blueprint("stores", __name__, description="Operation on stores")
 
 
-@blp.route("/store/<string:store_id>")
+@blp.route("/store/<int:store_id>")
 class store(MethodView):
     @blp.response(status_code=200, schema=StoreSchema)
     def get(self, store_id):
@@ -28,6 +29,7 @@ class store(MethodView):
 
 @blp.route("/store")
 class StoreList(MethodView):
+    @jwt_required()
     @blp.response(status_code=200, schema=StoreSchema(many=True))
     def get(self):
         try:
@@ -37,7 +39,7 @@ class StoreList(MethodView):
             abort(http_status_code=500, message="Error while processing")
 
     @blp.arguments(StoreSchema)
-    @blp.response(status_code=201, schema=StoreSchema)
+    @blp.response(status_code=201)
     def post(self, store_data):
         try:
             store_ = StoreModel(**store_data)
